@@ -18,7 +18,7 @@
 namespace DBoW2 {
 
 /// Vector of nodes with indexes of local features
-class FeatureVector: 
+class FeatureVector:
   public std::map<NodeId, std::vector<unsigned int> >
 {
 public:
@@ -27,12 +27,12 @@ public:
    * Constructor
    */
   FeatureVector(void);
-  
+
   /**
    * Destructor
    */
   ~FeatureVector(void);
-  
+
   /**
    * Adds a feature to an existing node, or adds a new node with an initial
    * feature
@@ -47,10 +47,9 @@ public:
    * @param v feature vector
    */
   friend std::ostream& operator<<(std::ostream &out, const FeatureVector &v);
-    
+
 };
 
 } // namespace DBoW2
 
 #endif
-
