@@ -21,7 +21,7 @@
 using namespace DBoW2;
 using namespace std;
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 void loadFeatures(vector<vector<cv::Mat > > &features);
 void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out);
@@ -29,12 +29,17 @@ void testVocCreation(const vector<vector<cv::Mat > > &features);
 void testDatabase(const vector<vector<cv::Mat > > &features);
 
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+void convertVocabulary(std::string filename_in, std::string filename_out);
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 
 // number of training images
 const int NIMAGES = 4;
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 void wait()
 {
@@ -47,18 +52,40 @@ void wait()
 int main()
 {
   vector<vector<cv::Mat > > features;
-  loadFeatures(features);
+  // loadFeatures(features);
+  //
+  // testVocCreation(features);
+  //
+  // wait();
+  //
+  // testDatabase(features);
 
-  testVocCreation(features);
-
-  wait();
-
-  testDatabase(features);
+  convertVocabulary("/home/marcus/code/VIO/vocabulary/ORBvoc.yml",
+      "/home/marcus/code/VIO/vocabulary/ORBvoc.yml.gz");
 
   return 0;
 }
 
 // ----------------------------------------------------------------------------
+
+void convertVocabulary(std::string filename_in, std::string filename_out) {
+  OrbVocabulary vocab;
+
+  std::cout << "loading vocabulary from " << filename_in << std::endl;
+  vocab.load(filename_in);
+  std::cout << "successfully loaded vocabulary with " << vocab.size()
+            << " visual words." << std::endl;
+
+  std::cout << "now saving vocabluary to " << filename_out
+            << "..." << std::endl;
+
+  vocab.save(filename_out);
+
+  std::cout << "done!" << std::endl;
+}
+
+// ----------------------------------------------------------------------------
+
 
 void loadFeatures(vector<vector<cv::Mat > > &features)
 {
@@ -101,7 +128,7 @@ void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out)
 
 void testVocCreation(const vector<vector<cv::Mat > > &features)
 {
-  // branching factor and depth levels 
+  // branching factor and depth levels
   const int k = 9;
   const int L = 3;
   const WeightingType weight = TF_IDF;
@@ -125,7 +152,7 @@ void testVocCreation(const vector<vector<cv::Mat > > &features)
     for(int j = 0; j < NIMAGES; j++)
     {
       voc.transform(features[j], v2);
-      
+
       double score = voc.score(v1, v2);
       cout << "Image " << i << " vs Image " << j << ": " << score << endl;
     }
@@ -145,10 +172,10 @@ void testDatabase(const vector<vector<cv::Mat > > &features)
 
   // load the vocabulary from disk
   OrbVocabulary voc("small_voc.yml.gz");
-  
+
   OrbDatabase db(voc, false, 0); // false = do not use direct index
   // (so ignore the last param)
-  // The direct index is useful if we want to retrieve the features that 
+  // The direct index is useful if we want to retrieve the features that
   // belong to some vocabulary node.
   // db creates a copy of the vocabulary, we may get rid of "voc" now
 
@@ -170,7 +197,7 @@ void testDatabase(const vector<vector<cv::Mat > > &features)
   {
     db.query(features[i], ret, 4);
 
-    // ret[0] is always the same image in this case, because we added it to the 
+    // ret[0] is always the same image in this case, because we added it to the
     // database. ret[1] is the second best match.
 
     cout << "Searching for Image " << i << ". " << ret << endl;
@@ -183,13 +210,11 @@ void testDatabase(const vector<vector<cv::Mat > > &features)
   cout << "Saving database..." << endl;
   db.save("small_db.yml.gz");
   cout << "... done!" << endl;
-  
-  // once saved, we can load it again  
+
+  // once saved, we can load it again
   cout << "Retrieving database once again..." << endl;
   OrbDatabase db2("small_db.yml.gz");
   cout << "... done! This is: " << endl << db2 << endl;
 }
 
 // ----------------------------------------------------------------------------
-
-
